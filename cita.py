@@ -10,9 +10,9 @@ from agenda import (ver_agenda_semana, etiqueta_franja,
                     HORA_INICIO, HORA_FIN, HORAS_COMIDA)
 import sesion
 
-# Si la práctica pide fechas que ya pasaron (ej. 17/11/2025), cámbialo a True.
-PERMITIR_FECHAS_PASADAS = False
-FECHA_MINIMA = datetime.date(2000, 1, 1) if PERMITIR_FECHAS_PASADAS else None
+# True = se puede agendar en cualquier fecha (pasada o futura). False = solo desde hoy.
+PERMITIR_FECHAS_PASADAS = True
+FECHA_MINIMA = datetime.date.min if PERMITIR_FECHAS_PASADAS else None
 
 
 # ------------------------------------------------------------------

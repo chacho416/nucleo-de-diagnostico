@@ -8,6 +8,7 @@ MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
          "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 DIAS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"]
 AZUL = "#1f4e78"
+ANIO_MIN, ANIO_MAX = 1900, 2200      # años que se pueden elegir en el calendario
 TODOS_LOS_MINUTOS = tuple(f"{m:02d}" for m in range(60))   # 00, 01, 02 ... 59
 
 
@@ -47,8 +48,14 @@ class SelectorFecha(tk.Frame):
         encabezado = tk.Frame(top)
         encabezado.pack(fill=tk.X, pady=6)
         tk.Button(encabezado, text="<", width=3, command=lambda: mover(-1)).pack(side=tk.LEFT, padx=6)
-        titulo = tk.Label(encabezado, font=("Arial", 11, "bold"), fg=AZUL)
-        titulo.pack(side=tk.LEFT, expand=True)
+        centro = tk.Frame(encabezado)
+        centro.pack(side=tk.LEFT, expand=True)
+        cb_mes = ttk.Combobox(centro, values=MESES, state="readonly", width=11)
+        cb_mes.pack(side=tk.LEFT, padx=(0, 6))
+        var_anio = tk.StringVar()
+        sp_anio = ttk.Spinbox(centro, from_=ANIO_MIN, to=ANIO_MAX, width=6,
+                              textvariable=var_anio, command=lambda: ir_a_seleccion())
+        sp_anio.pack(side=tk.LEFT)
         tk.Button(encabezado, text=">", width=3, command=lambda: mover(1)).pack(side=tk.RIGHT, padx=6)
 
         cuerpo = tk.Frame(top)
@@ -62,7 +69,8 @@ class SelectorFecha(tk.Frame):
             for w in cuerpo.winfo_children():
                 w.destroy()
             anio, mes = estado["anio"], estado["mes"]
-            titulo.config(text=f"{MESES[mes - 1]} {anio}")
+            cb_mes.current(mes - 1)
+            var_anio.set(str(anio))
             for c, nombre in enumerate(DIAS):
                 tk.Label(cuerpo, text=nombre, width=4, fg=AZUL,
                          font=("Arial", 9, "bold")).grid(row=0, column=c)
@@ -81,6 +89,21 @@ class SelectorFecha(tk.Frame):
                     elif fecha == hoy:
                         boton.config(bg="#cfe8ff")
                     boton.grid(row=fila, column=c, padx=1, pady=1)
+
+        def ir_a_seleccion(_evento=None):
+            """Salta al mes y año elegidos en la lista y el cuadro de año."""
+            try:
+                anio = int(var_anio.get())
+            except ValueError:
+                var_anio.set(str(estado["anio"]))
+                return
+            estado["anio"] = min(max(anio, ANIO_MIN), ANIO_MAX)
+            estado["mes"] = cb_mes.current() + 1
+            dibujar()
+
+        cb_mes.bind("<<ComboboxSelected>>", ir_a_seleccion)
+        sp_anio.bind("<Return>", ir_a_seleccion)
+        sp_anio.bind("<FocusOut>", ir_a_seleccion)
 
         def mover(delta):
             mes = estado["mes"] + delta

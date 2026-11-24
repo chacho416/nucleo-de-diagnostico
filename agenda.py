@@ -20,7 +20,6 @@ COLOR_OCUPADO = "#f8cbad"
 COLOR_COMIDA = "#fff2cc"
 COLOR_PASADO = "#eeeeee"
 
-
 def _hora12(h):
     return h % 12 or 12
 
@@ -77,8 +76,10 @@ def ver_agenda_semana(padre, id_doctor, nombre_doctor, ppk, fecha_inicial=None, 
 
     leyenda = tk.Frame(win)
     leyenda.pack(pady=8)
-    for color, texto in [(COLOR_LIBRE, "Libre"), (COLOR_OCUPADO, "Ocupado"),
-                         (COLOR_COMIDA, "Comida"), (COLOR_PASADO, "Día pasado")]:
+    colores_leyenda = [(COLOR_LIBRE, "Libre"), (COLOR_OCUPADO, "Ocupado"), (COLOR_COMIDA, "Comida")]
+    if not permitir_pasado:
+        colores_leyenda.append((COLOR_PASADO, "Día pasado"))
+    for color, texto in colores_leyenda:
         tk.Label(leyenda, text="    ", bg=color, relief="solid", bd=1).pack(side=tk.LEFT, padx=(10, 3))
         tk.Label(leyenda, text=texto).pack(side=tk.LEFT)
     if al_elegir:
