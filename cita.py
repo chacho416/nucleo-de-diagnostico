@@ -152,7 +152,7 @@ def registrar_cita(padre):
 
     win = tk.Toplevel(padre)
     win.title(f"Registrar cita - Usuario: {sesion.obtener()}")
-    win.geometry("420x540")
+    win.geometry("420x580")
     sesion.poner_saludo(win)
 
     tk.Label(win, text="Paciente:").pack(pady=(6, 0))
@@ -210,12 +210,16 @@ def registrar_cita(padre):
                 return
             with conexion.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO cita (id_paciente, id_doctor, fecha, hora) VALUES (%s, %s, %s, %s)",
+                    "INSERT INTO cita (id_paciente, id_doctor, fecha, hora) "
+                    "VALUES (%s, %s, %s, %s) RETURNING id_cita",
                     (id_pac, id_doc, fecha, hora))
+                id_cita = cur.fetchone()[0]
             conexion.commit()
+            etiqueta_id.config(text=f"ID cita: {id_cita}")
             messagebox.showinfo("Cita registrada",
-                                f"Cita registrada para el {fecha.strftime('%d/%m/%Y')} "
-                                f"a las {hora.strftime('%H:%M')}.")
+                                f"Cita registrada correctamente.\n\nID cita: {id_cita}\n"
+                                f"Fecha: {fecha.strftime('%d/%m/%Y')}\n"
+                                f"Hora: {hora.strftime('%H:%M')}", parent=win)
             selector_fecha.clear()
             selector_hora.clear()
             cb_paciente.set("")
@@ -229,6 +233,8 @@ def registrar_cita(padre):
               ).pack(pady=(18, 4))
     tk.Button(win, text="Verificar disponibilidad", width=24, command=verificar).pack(pady=4)
     tk.Button(win, text="Registrar cita", width=24, command=guardar).pack(pady=4)
+    etiqueta_id = tk.Label(win, text="", font=("Arial", 13, "bold"), fg="#1f4e78")
+    etiqueta_id.pack(pady=(12, 0))
 
 
 # ------------------------------------------------------------------
@@ -301,7 +307,8 @@ def modificar_cita(padre):
             messagebox.showerror("Error", str(error))
             return
         for id_cita, id_doc, fecha, hora, nombre_doc in filas:
-            texto = f"{fecha.strftime('%d/%m/%Y')} {hora.strftime('%H:%M')} - {nombre_doc}"
+            texto = (f"ID {id_cita} - {fecha.strftime('%d/%m/%Y')} "
+                     f"{hora.strftime('%H:%M')} - {nombre_doc}")
             citas[texto] = (id_cita, id_doc, fecha, hora)
         cb_cita["values"] = list(citas.keys())
         if not citas:
@@ -378,7 +385,8 @@ def modificar_cita(padre):
                 cur.execute("UPDATE cita SET id_doctor = %s, fecha = %s, hora = %s "
                             "WHERE id_cita = %s", (id_doc, fecha, hora, id_cita))
             conexion.commit()
-            messagebox.showinfo("Cita actualizada", f"La cita se cambió a:\n{nueva}", parent=win)
+            messagebox.showinfo("Cita actualizada",
+                                f"ID cita: {id_cita}\nLa cita se cambió a:\n{nueva}", parent=win)
             cargar_citas()          # refresca la lista con los datos nuevos
         except Exception as error:
             conexion.rollback()
