@@ -1,83 +1,136 @@
-"""ARCHIVO PRINCIPAL: ejecuta este para iniciar el programa (login)."""
 import tkinter as tk
 from tkinter import messagebox
-import conexion
-import sesion
-import autenticacion
-import menu_principal
+import empleados
+import doctores
+import paciente
+import cita
 
 
-def entrar():
-    usuario = entry_usuario.get().strip()
-    contrasena = entry_contrasena.get()
+def crear_imagen_diagnostico(ventana):
+    ancho, alto = 240, 150
+    img = tk.PhotoImage(master=ventana, width=ancho, height=alto)
+    img.put("#e8f1f8", to=(0, 0, ancho, alto))
+    img.put("#1f4e78", to=(0, 0, ancho, 4))
+    img.put("#1f4e78", to=(0, alto - 4, ancho, alto))
+    img.put("#1f4e78", to=(0, 0, 4, alto))
+    img.put("#1f4e78", to=(ancho - 4, 0, ancho, alto))
+    img.put("#1f4e78", to=(105, 32, 135, 118))
+    img.put("#1f4e78", to=(77, 60, 163, 90))
+    return img
 
-    if not usuario or not contrasena:
-        messagebox.showwarning("Campos vacíos", "Por favor ingresa usuario y contraseña.")
-        return
+def abrir_ventana_principal(raiz, usuario_logeado, rol, callback_login):
+    ventana = tk.Toplevel(raiz)
+    ventana.title("Ventana Principal - Núcleo de Diagnóstico")
+    ventana.geometry("720x460")
 
-    conexion_db = conexion.conectar(usuario, contrasena)
-    if not conexion_db:
-        return
-    conexion.guardar_conexion(conexion_db)
+    def cerrar_sesion():
+        confirmar = messagebox.askyesno(
+            "Cerrar Sesión",
+            "¿Estás seguro de que deseas cerrar sesión?"
+        )
+        if confirmar:
+            ventana.destroy()
+            callback_login()
 
-    # 1) ¿Es el administrador?
-    if (usuario == autenticacion.ADMIN_USUARIO
-            and contrasena == autenticacion.ADMIN_CONTRASENA):
-        nombre, rol = "ADMINISTRADOR", "admin"
-    else:
-        # 2) ¿Es una empleada registrada? (usuario = código)
-        try:
-            nombre = autenticacion.validar_empleado(usuario, contrasena)
-        except Exception as error:
-            messagebox.showerror("Error al validar", str(error))
-            conexion.cerrar_conexion()
-            return
-        rol = "empleado"
-        if not nombre:
-            messagebox.showerror("Acceso denegado", "Código o contraseña incorrectos.")
-            conexion.cerrar_conexion()
-            return
+    ventana.protocol("WM_DELETE_WINDOW", cerrar_sesion)
 
-    sesion.iniciar(nombre)                       # recuerda quién entró
-    ventana.withdraw()                           # oculta el login
-    menu_principal.abrir_ventana_principal(
-        ventana, nombre, rol, volver_al_login
-    )  # "Hola, NOMBRE"
+    # Barra superior con botón CERRAR SESIÓN y el nombre completo del usuario
+    barra_superior = tk.Frame(ventana, bg="#1f4e78", height=38)
+    barra_superior.pack(fill="x")
 
+    tk.Button(
+        barra_superior,
+        text="CERRAR SESIÓN",
+        bg="#c0392b",
+        fg="white",
+        font=("Arial", 9, "bold"),
+        padx=10,
+        pady=3,
+        cursor="hand2",
+        command=cerrar_sesion
+    ).pack(side="left", padx=12, pady=5)
 
-def volver_al_login():
-    """Se llama al cerrar sesión: limpia los campos y muestra el login otra vez."""
-    entry_usuario.delete(0, tk.END)
-    entry_contrasena.delete(0, tk.END)
-    ventana.deiconify()
-    entry_usuario.focus()
+    tk.Label(
+        barra_superior,
+        text=f"Hola, {usuario_logeado}",
+        bg="#1f4e78",
+        fg="white",
+        font=("Arial", 11, "bold"),
+        padx=15
+    ).pack(side="right", pady=6)
 
+    # Barra de menús separada por tipo de usuario
+    barra_menu = tk.Menu(ventana)
 
-def salir():
-    ventana.destroy()
+    if rol == "empleado":
+        menu_pacientes = tk.Menu(barra_menu, tearoff=0)
+        menu_pacientes.add_command(
+            label="Insertar (dar de alta)",
+            command=lambda: paciente.insertar_paciente(ventana)
+        )
+        menu_pacientes.add_command(
+            label="Consultas Generales",
+            command=lambda: paciente.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="PACIENTES", menu=menu_pacientes)
 
+    elif rol == "admin":
+        menu_doctores = tk.Menu(barra_menu, tearoff=0)
+        menu_doctores.add_command(
+            label="Insertar doctor",
+            command=lambda: doctores.insertar_doctor(ventana)
+        )
+        menu_doctores.add_command(
+            label="Consultas generales",
+            command=lambda: doctores.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="DOCTORES", menu=menu_doctores)
 
-# ==========================================
-# INTERFAZ GRÁFICA (Tkinter) - LOGIN
-# ==========================================
-ventana = tk.Tk()
-ventana.title("Inicio de Sesión")
-ventana.geometry("340x470")
-ventana.resizable(False, False)
+        menu_empleados = tk.Menu(barra_menu, tearoff=0)
+        menu_empleados.add_command(
+            label="Insertar (agregar)",
+            command=lambda: None
+        )
+        menu_empleados.add_command(
+            label="Consultas Generales",
+            command=lambda: empleados.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="EMPLEADOS", menu=menu_empleados)
 
+        menu_pacientes = tk.Menu(barra_menu, tearoff=0)
+        menu_pacientes.add_command(
+            label="Consultas Generales",
+            command=lambda: paciente.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="PACIENTES", menu=menu_pacientes)
 
-tk.Label(ventana, text="Usuario:").pack(pady=(15, 5))
-entry_usuario = tk.Entry(ventana)
-entry_usuario.pack()
+    menu_citas = tk.Menu(barra_menu, tearoff=0)
+    menu_citas.add_command(
+        label="Registrar cita",
+        command=lambda: cita.registrar_cita(ventana)
+    )
+    menu_citas.add_command(
+        label="Modificar cita",
+        command=lambda: cita.modificar_cita(ventana)
+    )
+    menu_citas.add_command(
+        label="Consultas generales",
+        command=lambda: cita.consultas_generales(ventana)
+    )
+    barra_menu.add_cascade(label="CITAS", menu=menu_citas)
 
-tk.Label(ventana, text="Contraseña:").pack(pady=(15, 5))
-entry_contrasena = tk.Entry(ventana, show="*")
-entry_contrasena.pack()
+    ventana.config(menu=barra_menu)
 
-frame_botones = tk.Frame(ventana)
-frame_botones.pack(pady=25)
+    # Contenido central con imagen empotrada
+    contenedor = tk.Frame(ventana)
+    contenedor.pack(expand=True)
 
-tk.Button(frame_botones, text="Entrar", width=10, command=entrar).pack(side=tk.LEFT, padx=10)
-tk.Button(frame_botones, text="Salir", width=10, command=salir).pack(side=tk.LEFT, padx=10)
+    tk.Label(
+        contenedor,
+        text="SISTEMA DE GESTIÓN\nNÚCLEO DE DIAGNÓSTICO",
+        font=("Arial", 15, "bold"),
+        fg="#1f4e78"
+    ).pack(pady=15)
 
-ventana.mainloop()
+    ventana.imagen_diagnostico = crear_imagen_diagnostico(ventana)
+    tk.Label(contenedor, image=ventana.imagen_diagnostico).pack(pady=10)
