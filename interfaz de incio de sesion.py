@@ -4,7 +4,7 @@ from tkinter import messagebox
 from conexion import conectar, guardar_conexion, cerrar_conexion
 import sesion
 from autenticacion import (ADMIN_USUARIO, ADMIN_CONTRASENA, validar_empleado)
-from menu_principal import abrir_menu_principal
+from menu_principal import abrir_ventana_principal
 
 
 def entrar():
@@ -39,7 +39,7 @@ def entrar():
 
     sesion.iniciar(nombre)                       # recuerda quién entró
     ventana.withdraw()                           # oculta el login
-    abrir_menu_principal(ventana, nombre, rol, volver_al_login)  # "Hola, NOMBRE"
+    abrir_ventana_principal(ventana, nombre, rol, volver_al_login)
 
 
 def volver_al_login():
@@ -59,11 +59,10 @@ def salir():
 # ==========================================
 ventana = tk.Tk()
 ventana.title("Inicio de Sesión")
-ventana.geometry("340x470")
+ventana.geometry("340x300")
 ventana.resizable(False, False)
 
-
-tk.Label(ventana, text="Usuario:").pack(pady=(15, 5))
+tk.Label(ventana, text="Usuario:").pack(pady=(30, 5))
 entry_usuario = tk.Entry(ventana)
 entry_usuario.pack()
 
