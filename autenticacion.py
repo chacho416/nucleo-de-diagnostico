@@ -1,7 +1,8 @@
-"""Validación de usuarios: administrador y empleadas (login por código y contraseña)."""
+"""Validación de usuarios: administrador, empleadas y doctores (login por código y contraseña)."""
 from conexion import obtener_conexion
+from esquema import columna_pk
 
-# --- Administrador 
+# --- Administrador
 ADMIN_USUARIO = "admin"
 ADMIN_CONTRASENA = "1234"
 
@@ -24,6 +25,24 @@ def validar_empleado(id, contrasena):
             )
             fila = cur.fetchone()
         return fila[0] if fila else None
+    except Exception:
+        conexion.rollback()
+        raise
+
+
+def validar_doctor(id_doctor, contrasena):
+    """Devuelve (id_doctor, nombre) si el ID y la contraseña del doctor son correctos; si no, None."""
+    conexion = obtener_conexion()
+    pk = columna_pk("doctor") or "id_doctor"
+    try:
+        with conexion.cursor() as cur:
+            cur.execute(
+                f"SELECT {pk}, nombre FROM doctor "
+                f"WHERE {pk}::text = %s AND contrasena = %s",
+                (id_doctor, contrasena),
+            )
+            fila = cur.fetchone()
+        return (fila[0], fila[1]) if fila else None
     except Exception:
         conexion.rollback()
         raise

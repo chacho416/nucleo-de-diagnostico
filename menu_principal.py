@@ -1,9 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
+from conexion import cerrar_conexion
+import sesion
 import empleados
 import doctores
 import paciente
 import cita
+import medicamentos
+import consultas
 
 
 def crear_imagen_diagnostico(ventana):
@@ -18,17 +22,21 @@ def crear_imagen_diagnostico(ventana):
     img.put("#1f4e78", to=(77, 60, 163, 90))
     return img
 
+
 def abrir_ventana_principal(raiz, usuario_logeado, rol, callback_login):
     ventana = tk.Toplevel(raiz)
     ventana.title("Ventana Principal - Núcleo de Diagnóstico")
-    ventana.geometry("720x460")
+    ventana.geometry("760x460")
 
     def cerrar_sesion():
         confirmar = messagebox.askyesno(
             "Cerrar Sesión",
-            "¿Estás seguro de que deseas cerrar sesión?"
+            "¿Estás seguro de que deseas cerrar sesión?",
+            parent=ventana
         )
         if confirmar:
+            cerrar_conexion()
+            sesion.cerrar()
             ventana.destroy()
             callback_login()
 
@@ -74,6 +82,43 @@ def abrir_ventana_principal(raiz, usuario_logeado, rol, callback_login):
         )
         barra_menu.add_cascade(label="PACIENTES", menu=menu_pacientes)
 
+        menu_citas = tk.Menu(barra_menu, tearoff=0)
+        menu_citas.add_command(
+            label="Registrar cita",
+            command=lambda: cita.registrar_cita(ventana)
+        )
+        menu_citas.add_command(
+            label="Consultas generales",
+            command=lambda: cita.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="CITAS", menu=menu_citas)
+
+    elif rol == "doctor":
+        menu_citas = tk.Menu(barra_menu, tearoff=0)
+        menu_citas.add_command(
+            label="Ver citas",
+            command=lambda: cita.ver_citas_doctor(ventana)
+        )
+        barra_menu.add_cascade(label="CITAS", menu=menu_citas)
+
+        menu_pacientes = tk.Menu(barra_menu, tearoff=0)
+        menu_pacientes.add_command(
+            label="Ver paciente",
+            command=lambda: cita.ver_paciente_proxima_cita(ventana)
+        )
+        barra_menu.add_cascade(label="PACIENTES", menu=menu_pacientes)
+
+        menu_consultas = tk.Menu(barra_menu, tearoff=0)
+        menu_consultas.add_command(
+            label="Registrar consulta (diagnóstico)",
+            command=lambda: consultas.registrar_consulta(ventana)
+        )
+        menu_consultas.add_command(
+            label="Ver historial de consultas",
+            command=lambda: consultas.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="CONSULTAS", menu=menu_consultas)
+
     elif rol == "admin":
         menu_doctores = tk.Menu(barra_menu, tearoff=0)
         menu_doctores.add_command(
@@ -89,7 +134,7 @@ def abrir_ventana_principal(raiz, usuario_logeado, rol, callback_login):
         menu_empleados = tk.Menu(barra_menu, tearoff=0)
         menu_empleados.add_command(
             label="Insertar (agregar)",
-            command=lambda: None
+            command=lambda: empleados.insertar_empleado(ventana)
         )
         menu_empleados.add_command(
             label="Consultas Generales",
@@ -99,25 +144,51 @@ def abrir_ventana_principal(raiz, usuario_logeado, rol, callback_login):
 
         menu_pacientes = tk.Menu(barra_menu, tearoff=0)
         menu_pacientes.add_command(
+            label="Insertar (dar de alta)",
+            command=lambda: paciente.insertar_paciente(ventana)
+        )
+        menu_pacientes.add_command(
             label="Consultas Generales",
             command=lambda: paciente.consultas_generales(ventana)
         )
         barra_menu.add_cascade(label="PACIENTES", menu=menu_pacientes)
 
-    menu_citas = tk.Menu(barra_menu, tearoff=0)
-    menu_citas.add_command(
-        label="Registrar cita",
-        command=lambda: cita.registrar_cita(ventana)
-    )
-    menu_citas.add_command(
-        label="Modificar cita",
-        command=lambda: cita.modificar_cita(ventana)
-    )
-    menu_citas.add_command(
-        label="Consultas generales",
-        command=lambda: cita.consultas_generales(ventana)
-    )
-    barra_menu.add_cascade(label="CITAS", menu=menu_citas)
+        menu_medicamentos = tk.Menu(barra_menu, tearoff=0)
+        menu_medicamentos.add_command(
+            label="Insertar (dar de alta)",
+            command=lambda: medicamentos.insertar_medicamento(ventana)
+        )
+        menu_medicamentos.add_command(
+            label="Consultas generales",
+            command=lambda: medicamentos.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="MEDICAMENTOS", menu=menu_medicamentos)
+
+        menu_consultas = tk.Menu(barra_menu, tearoff=0)
+        menu_consultas.add_command(
+            label="Registrar consulta",
+            command=lambda: consultas.registrar_consulta(ventana)
+        )
+        menu_consultas.add_command(
+            label="Consultas generales",
+            command=lambda: consultas.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="CONSULTAS", menu=menu_consultas)
+
+        menu_citas = tk.Menu(barra_menu, tearoff=0)
+        menu_citas.add_command(
+            label="Registrar cita",
+            command=lambda: cita.registrar_cita(ventana)
+        )
+        menu_citas.add_command(
+            label="Modificar cita",
+            command=lambda: cita.modificar_cita(ventana)
+        )
+        menu_citas.add_command(
+            label="Consultas generales",
+            command=lambda: cita.consultas_generales(ventana)
+        )
+        barra_menu.add_cascade(label="CITAS", menu=menu_citas)
 
     ventana.config(menu=barra_menu)
 

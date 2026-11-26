@@ -8,17 +8,17 @@ MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
          "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 DIAS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"]
 AZUL = "#1f4e78"
-ANIO_MIN, ANIO_MAX = 1900, 2200      # años que se pueden elegir en el calendario
-TODOS_LOS_MINUTOS = tuple(f"{m:02d}" for m in range(60))   # 00, 01, 02 ... 59
+ANIO_MIN, ANIO_MAX = 1900, 2200
+TODOS_LOS_MINUTOS = tuple(f"{m:02d}" for m in range(60))
 
 
 class SelectorFecha(tk.Frame):
-    """Campo de fecha con un calendario desplegable. Los días pasados no se pueden elegir."""
+    """Campo de fecha con un calendario desplegable. Permite elegir cualquier día del año."""
 
     def __init__(self, padre, fecha_minima=None):
         super().__init__(padre)
         self._fecha = None
-        self._minima = fecha_minima or datetime.date.today()
+        self._minima = fecha_minima or datetime.date.min
         self._var = tk.StringVar()
         tk.Entry(self, textvariable=self._var, width=14, state="readonly",
                  justify="center").pack(side=tk.LEFT)
@@ -47,16 +47,21 @@ class SelectorFecha(tk.Frame):
 
         encabezado = tk.Frame(top)
         encabezado.pack(fill=tk.X, pady=6)
-        tk.Button(encabezado, text="<", width=3, command=lambda: mover(-1)).pack(side=tk.LEFT, padx=6)
+
+        btn_anterior = tk.Button(encabezado, text="<", width=3)
+        btn_anterior.pack(side=tk.LEFT, padx=6)
+
         centro = tk.Frame(encabezado)
         centro.pack(side=tk.LEFT, expand=True)
         cb_mes = ttk.Combobox(centro, values=MESES, state="readonly", width=11)
         cb_mes.pack(side=tk.LEFT, padx=(0, 6))
         var_anio = tk.StringVar()
         sp_anio = ttk.Spinbox(centro, from_=ANIO_MIN, to=ANIO_MAX, width=6,
-                              textvariable=var_anio, command=lambda: ir_a_seleccion())
+                              textvariable=var_anio)
         sp_anio.pack(side=tk.LEFT)
-        tk.Button(encabezado, text=">", width=3, command=lambda: mover(1)).pack(side=tk.RIGHT, padx=6)
+
+        btn_siguiente = tk.Button(encabezado, text=">", width=3)
+        btn_siguiente.pack(side=tk.RIGHT, padx=6)
 
         cuerpo = tk.Frame(top)
         cuerpo.pack(padx=8, pady=(0, 8))
@@ -90,8 +95,16 @@ class SelectorFecha(tk.Frame):
                         boton.config(bg="#cfe8ff")
                     boton.grid(row=fila, column=c, padx=1, pady=1)
 
+        def mover(delta):
+            mes = estado["mes"] + delta
+            nuevo_anio = estado["anio"] + (mes - 1) // 12
+            nuevo_mes = (mes - 1) % 12 + 1
+            if ANIO_MIN <= nuevo_anio <= ANIO_MAX:
+                estado["anio"] = nuevo_anio
+                estado["mes"] = nuevo_mes
+                dibujar()
+
         def ir_a_seleccion(_evento=None):
-            """Salta al mes y año elegidos en la lista y el cuadro de año."""
             try:
                 anio = int(var_anio.get())
             except ValueError:
@@ -101,27 +114,22 @@ class SelectorFecha(tk.Frame):
             estado["mes"] = cb_mes.current() + 1
             dibujar()
 
+        btn_anterior.config(command=lambda: mover(-1))
+        btn_siguiente.config(command=lambda: mover(1))
+        sp_anio.config(command=ir_a_seleccion)
         cb_mes.bind("<<ComboboxSelected>>", ir_a_seleccion)
         sp_anio.bind("<Return>", ir_a_seleccion)
         sp_anio.bind("<FocusOut>", ir_a_seleccion)
-
-        def mover(delta):
-            mes = estado["mes"] + delta
-            estado["anio"] += (mes - 1) // 12
-            estado["mes"] = (mes - 1) % 12 + 1
-            dibujar()
 
         dibujar()
         top.grab_set()
 
 
 class SelectorHora(tk.Frame):
-    """Campo de hora con listas de hora y minutos (todos los minutos, de 00 a 59).
-    Las horas van de hora_inicio hasta hora_fin - 1.
-    Con ultima_hora_solo_en_punto=True, en la última hora solo se puede elegir :00."""
+    """Campo de hora en formato de 24 horas (09:00 a 20:00)."""
 
-    def __init__(self, padre, hora_inicio=9, hora_fin=20, minutos=TODOS_LOS_MINUTOS,
-                 ultima_hora_solo_en_punto=False):
+    def __init__(self, padre, hora_inicio=9, hora_fin=21, minutos=("00", "15", "30", "45"),
+                 ultima_hora_solo_en_punto=True):
         super().__init__(padre)
         self._solo_en_punto = ultima_hora_solo_en_punto
         self._minutos = list(minutos)
@@ -135,7 +143,7 @@ class SelectorHora(tk.Frame):
         self._hora.pack(side=tk.LEFT)
         tk.Label(self, text=":", font=("Arial", 11, "bold")).pack(side=tk.LEFT, padx=3)
         self._min.pack(side=tk.LEFT)
-        tk.Label(self, text="hrs").pack(side=tk.LEFT, padx=(6, 0))
+        tk.Label(self, text="hrs (24h)").pack(side=tk.LEFT, padx=(6, 0))
 
     def _ajustar_minutos(self, _event=None):
         if self._solo_en_punto and self._hora.get() == f"{self._hora_limite:02d}":
@@ -155,12 +163,6 @@ class SelectorHora(tk.Frame):
         if not self._hora.get():
             return None
         return datetime.time(int(self._hora.get()), int(self._min.get() or 0))
-
-    def set(self, hora):
-        """Pone una hora (datetime.time) en los selectores."""
-        self._hora.set(f"{hora.hour:02d}")
-        self._min.config(values=self._minutos)
-        self._min.set(f"{hora.minute:02d}")
 
     def clear(self):
         self._hora.set("")

@@ -397,3 +397,85 @@ def modificar_cita(padre):
               ).pack(pady=(18, 4))
     tk.Button(win, text="Verificar disponibilidad", width=24, command=verificar).pack(pady=4)
     tk.Button(win, text="Actualizar cita", width=24, command=actualizar).pack(pady=4)
+
+
+# ------------------------------------------------------------------
+# Opciones exclusivas del DOCTOR logeado (Paso 5)
+# ------------------------------------------------------------------
+def ver_citas_doctor(padre):
+    """Muestra las citas del doctor que inició sesión."""
+    id_doc = sesion.obtener_id()
+    if id_doc is None:
+        messagebox.showwarning("Sesión", "No se encontró el ID del doctor en la sesión.")
+        return
+    ppk = columna_pk("paciente") or "id_paciente"
+    consulta = (
+        "SELECT c.id_cita, c.fecha, c.hora, p.nombre AS paciente "
+        f"FROM cita c JOIN paciente p ON p.{ppk} = c.id_paciente "
+        "WHERE c.id_doctor = %s "
+        "ORDER BY c.fecha, c.hora"
+    )
+    mostrar_consulta(padre, f"Citas del Dr. {sesion.obtener()}", consulta, (id_doc,))
+
+
+def ver_paciente_proxima_cita(padre):
+    """Permite al doctor elegir el paciente de su consulta y muestra toda su información."""
+    id_doc = sesion.obtener_id()
+    if id_doc is None:
+        messagebox.showwarning("Sesión", "No se encontró el ID del doctor en la sesión.")
+        return
+
+    ppk = columna_pk("paciente") or "id_paciente"
+    conexion = obtener_conexion()
+    try:
+        with conexion.cursor() as cur:
+            # Obtiene los pacientes que tienen cita con este doctor
+            cur.execute(
+                f"SELECT DISTINCT p.{ppk}, p.nombre "
+                f"FROM cita c JOIN paciente p ON p.{ppk} = c.id_paciente "
+                "WHERE c.id_doctor = %s "
+                "ORDER BY p.nombre",
+                (id_doc,),
+            )
+            filas = cur.fetchall()
+            # Si el doctor aún no tiene citas asignadas, carga todos los pacientes registrados
+            if not filas:
+                cur.execute(f"SELECT {ppk}, nombre FROM paciente ORDER BY nombre")
+                filas = cur.fetchall()
+    except Exception as error:
+        conexion.rollback()
+        messagebox.showerror("Error", f"No pude leer los pacientes:\n{error}")
+        return
+
+    if not filas:
+        messagebox.showinfo("Sin pacientes", "No hay pacientes registrados en el sistema.")
+        return
+
+    opciones = [f"{pid} - {nombre}" for pid, nombre in filas]
+
+    win = tk.Toplevel(padre)
+    win.title(f"Ver paciente - Usuario: {sesion.obtener()}")
+    win.geometry("420x210")
+    win.resizable(False, False)
+    sesion.poner_saludo(win)
+
+    tk.Label(win, text="Selecciona el paciente que atenderás en la consulta:").pack(pady=(12, 4))
+    cb_paciente = ttk.Combobox(win, values=opciones, state="readonly", width=44)
+    cb_paciente.current(0)
+    cb_paciente.pack(pady=4)
+
+    def mostrar_info():
+        if not cb_paciente.get():
+            messagebox.showwarning("Faltan datos", "Elige un paciente de la lista.", parent=win)
+            return
+        id_pac = int(cb_paciente.get().split(" - ")[0])
+        nombre_pac = cb_paciente.get().split(" - ", 1)[1]
+        win.destroy()
+        mostrar_consulta(
+            padre,
+            f"Información del paciente - {nombre_pac}",
+            f"SELECT * FROM paciente WHERE {ppk} = %s",
+            (id_pac,),
+        )
+
+    tk.Button(win, text="Ver información del paciente", width=26, command=mostrar_info).pack(pady=16)

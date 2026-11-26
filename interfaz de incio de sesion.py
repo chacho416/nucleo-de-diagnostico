@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import messagebox
 from conexion import conectar, guardar_conexion, cerrar_conexion
 import sesion
-from autenticacion import (ADMIN_USUARIO, ADMIN_CONTRASENA, validar_empleado)
+from autenticacion import (ADMIN_USUARIO, ADMIN_CONTRASENA,
+                           validar_empleado, validar_doctor)
 from menu_principal import abrir_ventana_principal
 
 
@@ -22,23 +23,37 @@ def entrar():
 
     # 1) ¿Es el administrador?
     if usuario == ADMIN_USUARIO and contrasena == ADMIN_CONTRASENA:
-        nombre, rol = "ADMINISTRADOR", "admin"
+        nombre, rol, id_usr = "ADMINISTRADOR", "admin", None
     else:
         # 2) ¿Es una empleada registrada? (usuario = código)
         try:
-            nombre = validar_empleado(usuario, contrasena)
+            nombre_emp = validar_empleado(usuario, contrasena)
         except Exception as error:
             messagebox.showerror("Error al validar", str(error))
             cerrar_conexion()
             return
-        rol = "empleado"
-        if not nombre:
-            messagebox.showerror("Acceso denegado", "Código o contraseña incorrectos.")
-            cerrar_conexion()
-            return
 
-    sesion.iniciar(nombre)                       # recuerda quién entró
-    ventana.withdraw()                           # oculta el login
+        if nombre_emp:
+            nombre, rol, id_usr = nombre_emp, "empleado", usuario
+        else:
+            # 3) ¿Es un doctor registrado? (usuario = ID del doctor)
+            try:
+                doc = validar_doctor(usuario, contrasena)
+            except Exception as error:
+                messagebox.showerror("Error al validar", str(error))
+                cerrar_conexion()
+                return
+
+            if doc:
+                id_usr, nombre = doc
+                rol = "doctor"
+            else:
+                messagebox.showerror("Acceso denegado", "Código o contraseña incorrectos.")
+                cerrar_conexion()
+                return
+
+    sesion.iniciar(nombre, id_usr)              # recuerda quién entró y su ID
+    ventana.withdraw()                          # oculta el login
     abrir_ventana_principal(ventana, nombre, rol, volver_al_login)
 
 

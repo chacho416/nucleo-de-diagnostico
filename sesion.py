@@ -1,25 +1,34 @@
-"""Guarda quién tiene la sesión iniciada y muestra el saludo en cualquier ventana."""
+"""Guarda los datos del usuario que inició sesión."""
 import tkinter as tk
 
-_nombre = ""
+_usuario = None
+_id_usuario = None
 
 
-def iniciar(nombre):
-    global _nombre
-    _nombre = nombre
-
-
-def cerrar():
-    global _nombre
-    _nombre = ""
+def iniciar(nombre, id_usuario=None):
+    global _usuario, _id_usuario
+    _usuario = nombre
+    _id_usuario = id_usuario
 
 
 def obtener():
-    return _nombre
+    return _usuario or ""
+
+
+def obtener_id():
+    return _id_usuario
+
+
+def cerrar():
+    global _usuario, _id_usuario
+    _usuario = None
+    _id_usuario = None
 
 
 def poner_saludo(ventana):
-    """Coloca 'Hola, NOMBRE' en la parte superior derecha de la ventana.
-    Debe llamarse antes de agregar los demás elementos."""
-    tk.Label(ventana, text=f"Hola, {_nombre}", font=("Arial", 11, "bold")).pack(
-        anchor="ne", padx=12, pady=6)
+    tk.Label(
+        ventana,
+        text=f"Usuario: {obtener()}",
+        font=("Arial", 9, "bold"),
+        fg="#1f4e78"
+    ).pack(pady=(6, 2))

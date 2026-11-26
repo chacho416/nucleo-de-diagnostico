@@ -1,0 +1,73 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Length 1691 >>
+stream
+0.122 0.306 0.471 rg
+45 705 522 52 re f
+1 1 1 rg
+BT /F2 16 Tf 60 735 Td (NUCLEO DE DIAGNOSTICO MEDICO) Tj ET
+BT /F1 10 Tf 60 718 Td (RECETA MEDICA OFICIAL) Tj ET
+0 0 0 rg
+BT /F2 10 Tf 415 685 Td (Consulta ID: 2) Tj ET
+BT /F1 10 Tf 415 670 Td (Fecha: 23/11/2026  11:00) Tj ET
+0.122 0.306 0.471 rg
+BT /F2 11 Tf 45 685 Td (DATOS DEL MEDICO) Tj ET
+0 0 0 rg
+BT /F1 10 Tf 45 670 Td (Doctor: JOSUE FRANCISCO RAMIREZ LUGO) Tj ET
+BT /F1 10 Tf 45 655 Td (Especialidad: GASTROENTEROLOGIA) Tj ET
+0.75 0.75 0.75 RG 1 w 45 643 m 567 643 l S
+0.122 0.306 0.471 rg
+BT /F2 11 Tf 45 625 Td (DATOS DEL PACIENTE) Tj ET
+0 0 0 rg
+BT /F1 10 Tf 45 610 Td (Paciente: LUZ ROBLES JIMENEZ) Tj ET
+BT /F1 10 Tf 45 595 Td (Sexo: F    Fecha Nac.: 1956-08-11) Tj ET
+0.75 0.75 0.75 RG 1 w 45 583 m 567 583 l S
+0.122 0.306 0.471 rg
+BT /F2 11 Tf 45 563 Td (DIAGNOSTICO E HISTORIAL CLINICO) Tj ET
+0 0 0 rg
+BT /F1 10 Tf 45 545 Td (tiene dolor muscular y presenta sintomas de resfriado) Tj ET
+BT /F1 10 Tf 45 531 Td (--- Tratamiento ---) Tj ET
+BT /F1 10 Tf 45 517 Td (Medicamento: PARACETAMOL \(Tabletas, vía Oral\) | Días: 1 semana | Horario: Cada 12) Tj ET
+BT /F1 10 Tf 45 503 Td (horas) Tj ET
+0.75 0.75 0.75 RG 1 w 45 479 m 567 479 l S
+0.122 0.306 0.471 rg
+BT /F2 11 Tf 45 459 Td (PRESCRIPCION MEDICA (Rp/)) Tj ET
+0 0 0 rg
+BT /F2 10 Tf 45 441 Td (Medicamento: PARACETAMOL) Tj ET
+BT /F1 10 Tf 45 426 Td (Presentacion: Tabletas   |   Via: Oral) Tj ET
+BT /F1 10 Tf 45 411 Td (Duracion del tratamiento: 1 semana) Tj ET
+BT /F1 10 Tf 45 396 Td (Horario de suministro: Cada 12 horas) Tj ET
+0 0 0 RG 1 w 190 105 m 420 105 l S
+BT /F2 10 Tf 215 90 Td (Dr. JOSUE FRANCISCO RAMIREZ LUGO) Tj ET
+BT /F1 9 Tf 255 76 Td (Firma del Medico) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000000348 00000 n 
+0000000450 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2193
+%%EOF
